@@ -9,7 +9,6 @@ import sys
 import urllib.error
 import urllib.parse
 import urllib.request
-from datetime import datetime, timezone
 from pathlib import Path
 
 OWNER = "mov2day"
@@ -82,11 +81,10 @@ def fetch_docs(token: str | None):
 
 
 def format_markdown(releases, docs):
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     lines = [
         "# mov2day/watchmytest Updates",
         "",
-        f"Last synced: **{now}**",
+        "_This file is generated automatically by `scripts/sync_watchmytest.py`._",
         "",
         "## Releases",
         "",
