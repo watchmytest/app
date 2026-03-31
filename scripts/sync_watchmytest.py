@@ -7,8 +7,8 @@ import json
 import os
 import sys
 import urllib.error
-import urllib.parse
 import urllib.request
+from datetime import datetime, timezone
 from pathlib import Path
 
 OWNER = "mov2day"
@@ -33,28 +33,14 @@ def github_get(url: str, token: str | None = None):
         return json.loads(payload)
 
 
-def fetch_repo(token: str | None):
-    return github_get(API_BASE, token)
-
-
 def fetch_releases(token: str | None):
     url = f"{API_BASE}/releases?per_page={MAX_RELEASES}"
     return github_get(url, token)
 
 
-def fetch_tree_for_ref(ref: str, token: str | None):
-    quoted_ref = urllib.parse.quote(ref, safe="")
-    tree_url = f"{API_BASE}/git/trees/{quoted_ref}?recursive=1"
-    return github_get(tree_url, token)
-
-
 def fetch_docs(token: str | None):
-    repo = fetch_repo(token)
-    default_branch = repo.get("default_branch", "main")
-
-    # Primary path: ask for tree by branch name.
-    # Some repos/API setups may reject HEAD; using default_branch avoids that.
-    data = fetch_tree_for_ref(default_branch, token)
+    tree_url = f"{API_BASE}/git/trees/HEAD?recursive=1"
+    data = github_get(tree_url, token)
     tree = data.get("tree", [])
 
     docs = []
@@ -81,10 +67,11 @@ def fetch_docs(token: str | None):
 
 
 def format_markdown(releases, docs):
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     lines = [
         "# mov2day/watchmytest Updates",
         "",
-        "_This file is generated automatically by `scripts/sync_watchmytest.py`._",
+        f"Last synced: **{now}**",
         "",
         "## Releases",
         "",
